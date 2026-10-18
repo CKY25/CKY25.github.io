@@ -3,31 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Career Fair Card · Cheong Khe Yang</title>
+    <title>Print Kit · Cheong Khe Yang</title>
     <meta name="robots" content="noindex" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/jersey10-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
-    <main class="sheet">
-      <p class="tip">Print this page (Ctrl+P). You get a standee you can tape to your booth table and four cut-out cards. The QR codes point at <b id="site-url"></b></p>
-
-      <section class="standee">
-        <div class="kicker">✦ Interactive Portfolio ✦</div>
-        <h1>Cheong Khe Yang</h1>
-        <p class="role">Junior Unity Game Developer</p>
-        <div class="qr-wrap"><canvas class="qr" data-size="560"></canvas></div>
-        <p class="cta">Scan to explore my games</p>
-        <p class="sub">Walk around a pixel-art world, or tap ⚡ Quick View</p>
-        <p class="contact">ckyy0625@gmail.com · github.com/CKY25 · jemydev.itch.io</p>
+    <header class="bar no-print">
+      <div>
+        <p class="kicker">Career fair print kit</p>
+        <h1>Booth sign &amp; cards</h1>
+        <p class="lede">Print on A4 at home: a booth sign plus a sheet of eight business cards with crop marks. Every QR code opens <b id="site-url"></b></p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-gold" id="print" type="button">🖨 Print A4 sheets</button>
+        <a class="btn" href="print-card.html">Print-shop card file →</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <section class="step">
+        <h2 class="no-print"><span>1.</span> Booth sign</h2>
+        <p class="no-print">Tape it to your table or slide it into an A4 stand. Print in colour, "Fit to page" off.</p>
+        <div class="preview" id="sign"></div>
       </section>
-
-      <section class="cards">
-        <article class="card"><div><h2>Cheong Khe Yang</h2><p class="role">Junior Unity Game Developer</p><p class="small">ckyy0625@gmail.com<br />github.com/CKY25<br />jemydev.itch.io</p><p class="scan">▶ Scan to play my portfolio</p></div><canvas class="qr" data-size="260"></canvas></article>
-        <article class="card"><div><h2>Cheong Khe Yang</h2><p class="role">Junior Unity Game Developer</p><p class="small">ckyy0625@gmail.com<br />github.com/CKY25<br />jemydev.itch.io</p><p class="scan">▶ Scan to play my portfolio</p></div><canvas class="qr" data-size="260"></canvas></article>
-        <article class="card"><div><h2>Cheong Khe Yang</h2><p class="role">Junior Unity Game Developer</p><p class="small">ckyy0625@gmail.com<br />github.com/CKY25<br />jemydev.itch.io</p><p class="scan">▶ Scan to play my portfolio</p></div><canvas class="qr" data-size="260"></canvas></article>
-        <article class="card"><div><h2>Cheong Khe Yang</h2><p class="role">Junior Unity Game Developer</p><p class="small">ckyy0625@gmail.com<br />github.com/CKY25<br />jemydev.itch.io</p><p class="scan">▶ Scan to play my portfolio</p></div><canvas class="qr" data-size="260"></canvas></article>
+      <section class="step">
+        <h2 class="no-print"><span>2.</span> Card fronts</h2>
+        <p class="no-print">Eight cards per sheet. Thick paper (250–300 gsm) works best. Cut on the crop marks.</p>
+        <div class="preview" id="fronts"></div>
+      </section>
+      <section class="step">
+        <h2 class="no-print"><span>3.</span> Card backs</h2>
+        <p class="no-print">Feed sheet 2 back in and print this on the reverse, or use two-sided printing with "flip on long edge". The dark background runs past the cut lines, so a millimetre of misalignment won't show.</p>
+        <div class="preview" id="backs"></div>
       </section>
     </main>
     <script type="module" src="/src/card.ts"></script>

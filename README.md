@@ -24,7 +24,8 @@ npm run preview    # serve dist/ locally
 | `src/ui.ts` | Panels, Quick View, dialogs, toasts and achievements. |
 | `src/audio.ts` | Sound effects and the music loop. |
 | `public/media/` | Screenshots and the Emberfall trailer (720p, about 25 MB, only loaded when played). |
-| `card.html` | Printable career-fair standee and business cards with a QR code. |
+| `card.html` | Career-fair print kit: an A4 booth sign and a sheet of 8 business cards with crop marks. |
+| `print-card.html` | One print-ready business card (front and back, 90 × 54 mm with 3 mm bleed) plus PDF/PNG downloads for a print shop. |
 
 ### Adding a project
 1. Add an entry to `PROJECTS` or `JAMS` in `src/data.ts`, and put its images in `public/media/`.
@@ -43,5 +44,6 @@ npm run preview    # serve dist/ locally
 Netlify, Cloudflare Pages or Vercel also work: the build command is `npm run build` and the output folder is `dist`.
 
 ## Career fair checklist
-- Open `/card.html` on the deployed site and print it. The QR codes always point at `https://cky25.github.io/` (set in `src/card.ts`; add `?url=...` to override).
+- Open `/card.html` on the deployed site and print it at home, or send `/print/cheong-khe-yang-card.pdf` (linked from `/print-card.html`) to a print shop. The QR codes always point at `https://cky25.github.io/` (set in `src/cardkit.ts`; add `?url=...` to override).
+- After changing the card, regenerate the print-shop files with `scripts/export-card.mjs` (instructions at the top of the file).
 - Open the site once on your own phone or laptop before the fair. It caches itself (except the trailer), so it keeps working on bad Wi-Fi.

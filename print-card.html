@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Business Card · Cheong Khe Yang</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/jersey10-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body class="solo">
+    <header class="bar no-print">
+      <div>
+        <p class="kicker">Print-ready business card</p>
+        <h1>Send this to the printer</h1>
+        <p class="lede">One card, front and back, at full size with bleed. Send the PDF to any print shop. The QR code opens <b id="site-url"></b></p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-gold" href="print/cheong-khe-yang-card.pdf" download>⬇ PDF (front + back)</a>
+        <a class="btn" href="print/cheong-khe-yang-card-front.png" download>Front PNG</a>
+        <a class="btn" href="print/cheong-khe-yang-card-back.png" download>Back PNG</a>
+      </div>
+    </header>
+    <main class="wrap">
+      <ul class="specs no-print">
+        <li><b>90 × 54 mm</b>Standard Malaysian card size, landscape</li>
+        <li><b>3 mm bleed</b>File is 96 × 60 mm. The background runs past the cut line</li>
+        <li><b>4 mm safe zone</b>All text sits at least 4 mm inside the cut</li>
+        <li><b>300 dpi PNG · vector PDF</b>Double-sided, matt or soft-touch 350 gsm looks great</li>
+      </ul>
+      <section class="step">
+        <p class="no-print"><label class="toggle"><input type="checkbox" id="guides" /> Show cut line (pink) and safe zone (green)</label></p>
+        <div class="preview" id="cards"></div>
+      </section>
+    </main>
+    <script type="module" src="/src/print-card.ts"></script>
+  </body>
+</html>
