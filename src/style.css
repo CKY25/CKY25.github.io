@@ -1,3 +1,7 @@
+/* Self-hosted so the title never falls back to system fonts on slow or filtered networks. */
+@font-face { font-family: 'Jersey 10'; font-style: normal; font-weight: 400; font-display: block; src: url('/fonts/jersey10-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 900; font-display: swap; src: url('/fonts/nunito-latin.woff2') format('woff2'); }
+
 :root {
   --ink: #1d1a2b;
   --bg: #16142a;
@@ -40,7 +44,7 @@ img { max-width: 100%; display: block; }
 .btn-accent { background: var(--accent); }
 .btn-ghost { background: rgba(255, 247, 230, .12); color: var(--cream); border-color: rgba(255, 247, 230, .55); box-shadow: 0 4px 0 rgba(0,0,0,.4); }
 .btn-dark { background: var(--panel-2); color: var(--cream); border-color: var(--ink); }
-.btn-big { font-size: 1.5rem; padding: .8em 1.3em; min-width: 15em; }
+.btn-big { font-size: 1.5rem; padding: .8em 1.3em; min-width: min(15em, 100%); max-width: 100%; }
 .btn-sm { font-size: 1.15rem; padding: .5em .85em; box-shadow: 0 3px 0 var(--ink); }
 .btn .caret { width: 1.2em; text-align: center; }
 
@@ -51,11 +55,12 @@ img { max-width: 100%; display: block; }
   transition: opacity .6s, visibility .6s; overflow-y: auto;
 }
 .title.out { opacity: 0; visibility: hidden; }
-.title-inner { text-align: center; max-width: 720px; }
-.kicker { font-family: var(--pixel); color: var(--gold); letter-spacing: .25em; text-transform: uppercase; font-size: 1.15rem; margin: 0 0 .6rem; }
+.title-inner { text-align: center; width: 100%; max-width: 720px; min-width: 0; }
+.title-menu .btn-big { width: min(22.5rem, 100%); }
+.kicker { font-family: var(--pixel); color: var(--gold); letter-spacing: .25em; text-transform: uppercase; font-size: 1.15rem; margin: 0 0 .6rem; white-space: nowrap; }
 .title-name {
   font-family: var(--pixel); font-weight: 400; line-height: .85; margin: 0; letter-spacing: .01em;
-  font-size: clamp(4rem, 16vw, 8.5rem); color: var(--cream);
+  font-size: clamp(3.4rem, 16vw, 8.5rem); color: var(--cream); overflow-wrap: anywhere;
   text-shadow: 4px 4px 0 #ff6f91, 8px 8px 0 var(--ink);
   animation: float 4s ease-in-out infinite;
 }
@@ -69,6 +74,7 @@ img { max-width: 100%; display: block; }
 @keyframes blink { to { visibility: hidden; } }
 @keyframes float { 50% { transform: translateY(-6px); } }
 @media (pointer: coarse) { .hint-desktop { display: none; } }
+@media (max-width: 420px) { .kicker { letter-spacing: .14em; font-size: 1.05rem; } }
 
 /* ------------------------------------------------------------------ HUD */
 .hud { position: fixed; inset: 0; z-index: 10; pointer-events: none; }

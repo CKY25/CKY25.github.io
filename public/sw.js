@@ -1,10 +1,10 @@
 // Offline cache so the portfolio keeps working on flaky career-fair Wi-Fi once
 // it has been opened. Pages are network-first; assets are cache-first.
 // Videos are never cached (too big, and they stream with range requests).
-const CACHE = 'cky-portfolio-v1';
+const CACHE = 'cky-portfolio-v2';
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html', './favicon.svg'])).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html', './favicon.svg', './fonts/jersey10-latin.woff2', './fonts/nunito-latin.woff2'])).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

@@ -198,6 +198,7 @@ export class World {
     const bushes = [A.makeBush(1), A.makeBush(2, true), A.makeBush(3)];
     const rocks = [A.makeRock(1), A.makeRock(2)];
     const drocks = [A.makeRock(3, true), A.makeRock(4, true)];
+    const plants = new Map<number, Obj>(); // tile -> tree/bush/rock, so we can clear a way to coins
     for (let y = 0; y < MH; y++)
       for (let x = 0; x < MW; x++) {
         const i = this.idx(x, y);
@@ -211,15 +212,62 @@ export class World {
           const img = ash ? dead[Math.floor(r() * 3)] : (y < 16 || border) && r() < 0.45 ? pines[Math.floor(r() * 3)] : trees[Math.floor(r() * 6)];
           this.solid[i] = 1;
           // every tree sprite has its trunk base 2px above the bottom edge
-          this.objects.push({ img, x: x * T + 8 - img.width / 2, y: (y + 1) * T - img.height - 1, base: (y + 1) * T - 3, tag: 'tree' });
+          const o: Obj = { img, x: x * T + 8 - img.width / 2, y: (y + 1) * T - img.height - 1, base: (y + 1) * T - 3, tag: 'tree' };
+          this.objects.push(o); plants.set(i, o);
         } else if (!border && r() < (ash ? 0.04 : 0.025)) {
           const img = ash ? drocks[Math.floor(r() * 2)] : r() < 0.6 ? bushes[Math.floor(r() * 3)] : rocks[Math.floor(r() * 2)];
           this.solid[i] = 1;
-          this.objects.push({ img, x: x * T + 8 - img.width / 2, y: (y + 1) * T - img.height - 1, base: (y + 1) * T - 3 });
+          const o: Obj = { img, x: x * T + 8 - img.width / 2, y: (y + 1) * T - img.height - 1, base: (y + 1) * T - 3 };
+          this.objects.push(o); plants.set(i, o);
         }
       }
+    this.clearWayToCoins(plants);
 
     for (let i = 0; i < MW * MH; i++) if (this.ground[i] === G.Water) this.water.push(i);
+  }
+
+  // Random trees can wall a coin in. Flood-fill from the spawn, then for each
+  // coin that can't be reached, cut the shortest path through vegetation.
+  private clearWayToCoins(plants: Map<number, Obj>) {
+    const reach = () => {
+      const seen = new Uint8Array(MW * MH);
+      const q = [this.idx(SPAWN.x, SPAWN.y)];
+      seen[q[0]] = 1;
+      while (q.length) {
+        const c = q.pop()!, cx = c % MW, cy = Math.floor(c / MW);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx + dx, ny = cy + dy, n = this.idx(nx, ny);
+          if (this.inb(nx, ny) && !seen[n] && !this.isSolid(nx, ny)) { seen[n] = 1; q.push(n); }
+        }
+      }
+      return seen;
+    };
+    for (const coin of this.coins) {
+      const seen = reach();
+      const start = this.idx(Math.floor(coin.x / T), Math.floor(coin.y / T));
+      if (seen[start]) continue;
+      const came = new Int32Array(MW * MH).fill(-1);
+      const q = [start];
+      came[start] = start;
+      let hit = -1;
+      while (q.length && hit < 0) {
+        const c = q.shift()!, cx = c % MW, cy = Math.floor(c / MW);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx + dx, ny = cy + dy, n = this.idx(nx, ny);
+          if (!this.inb(nx, ny) || came[n] >= 0 || (this.solid[n] && !plants.has(n))) continue;
+          came[n] = c;
+          if (seen[n]) { hit = n; break; }
+          q.push(n);
+        }
+      }
+      for (let c = hit; c >= 0 && c !== start; c = came[c]) {
+        const o = plants.get(c);
+        if (!o) continue;
+        this.objects.splice(this.objects.indexOf(o), 1);
+        plants.delete(c);
+        this.solid[c] = 0;
+      }
+    }
   }
 
   nearestFree(x: number, y: number) {

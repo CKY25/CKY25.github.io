@@ -1,3 +1,5 @@
+@font-face { font-family: 'Jersey 10'; font-style: normal; font-weight: 400; font-display: block; src: url('/fonts/jersey10-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 400 900; font-display: swap; src: url('/fonts/nunito-latin.woff2') format('woff2'); }
 :root { --ink: #1d1a2b; --gold: #ffd34d; --pink: #ff6f91; --bg: #16142a; --cream: #fff7e6; }
 * { box-sizing: border-box; }
 body { margin: 0; background: #e9e6f2; font-family: 'Nunito', system-ui, sans-serif; color: var(--ink); }
