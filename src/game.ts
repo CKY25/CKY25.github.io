@@ -364,7 +364,9 @@ export class Game {
       const x = (i % MW) * T, y = Math.floor(i / MW) * T;
       if (!this.inView(x, y, 16)) continue;
       const h = (i * 7 + tick) % 6;
-      if (h < 2) ctx.fillRect(x + ((i * 5 + tick * 3) % 11) + 1, y + ((i * 3) % 12) + 2, 3, 1);
+      if (h >= 2) continue;
+      const sx = x + ((i * 5 + tick * 3) % 11) + 1, sy = y + ((i * 3) % 12) + 2;
+      if (w.waterMask[sy * MW * T + sx] && w.waterMask[sy * MW * T + sx + 2]) ctx.fillRect(sx, sy, 3, 1);
     }
 
     // target marker

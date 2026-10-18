@@ -89,7 +89,7 @@ img { max-width: 100%; display: block; }
 .badge strong { display: block; font-family: var(--pixel); font-size: 1.25rem; font-weight: 400; line-height: 1.1; }
 .badge span { color: var(--muted); font-size: .75rem; }
 .meter { flex-direction: column; align-items: stretch; gap: 4px; min-width: 130px; justify-content: center; }
-.meter-label { display: flex; justify-content: space-between; font-family: var(--pixel); font-size: 1.05rem; color: var(--muted); }
+.meter-label { display: flex; justify-content: space-between; gap: 6px; font-family: var(--pixel); font-size: 1.05rem; color: var(--muted); }
 .meter-label b { color: var(--cream); font-weight: 400; }
 .meter-bar { height: 8px; background: #0e0c1d; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
 .meter-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--green) 0 6px, #7fe0a3 6px 8px); transition: width .5s; }

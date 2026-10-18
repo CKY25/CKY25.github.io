@@ -1,5 +1,7 @@
 import * as A from './art';
+import { makeBuilding, type BuildingArt, type BuildingKind } from './buildings';
 import { T, rng } from './art';
+import { hash } from './pix';
 
 export const MW = 64;
 export const MH = 58;
@@ -10,11 +12,11 @@ export interface Zone {
   id: string;
   name: string;
   short: string;
-  kind: A.BuildingKind;
+  kind: BuildingKind;
   x: number; y: number; w: number; h: number; door: number;
   color: string;
   booth?: { a: string; b: string; icon: string };
-  art?: A.BuildingArt;
+  art?: BuildingArt;
 }
 
 // The world map. x/y/w/h are in tiles; `door` is the column (within the
@@ -63,6 +65,7 @@ export const SIGNS: Sign[] = [
 ];
 
 export const SPAWN = { x: 32, y: 29 };
+const CORNERS = [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const;
 const COIN_SPOTS = [[16, 8], [41, 7], [60, 9], [3, 15], [18, 30], [40, 30], [61, 34], [14, 44], [37, 44], [58, 29]];
 
 export interface Obj { img: HTMLCanvasElement; x: number; y: number; base: number; zone?: Zone; tag?: string }
@@ -78,6 +81,7 @@ export class World {
   coins: Coin[] = [];
   doors = new Map<number, Zone>();
   water: number[] = [];
+  waterMask!: Uint8Array; // per pixel, after the corners are rounded
   fountain = { x: 31, y: 24 };
   flames: { x: number; y: number }[] = [];
   lights: { x: number; y: number; color: string; i: number }[] = [];
@@ -138,7 +142,7 @@ export class World {
 
     // buildings
     for (const z of ZONES) {
-      const art = (z.art = A.makeBuilding(z.kind, z.w, z.h, z.x * 31 + z.y, z.booth));
+      const art = (z.art = makeBuilding(z.kind, z.w, z.h, z.x * 31 + z.y, z.booth));
       for (let y = z.y; y < z.y + z.h; y++) for (let x = z.x; x < z.x + z.w; x++) this.solid[this.idx(x, y)] = 1;
       this.reserve(z.x - 1, z.y - 1, z.w + 2, z.h + 2);
       const d = doorTile(z);
@@ -148,7 +152,7 @@ export class World {
       this.objects.push({ img: art.img, x: z.x * T, y: top, base: (z.y + z.h) * T - 1, zone: z });
       for (const f of art.flames) this.flames.push({ x: z.x * T + f.x, y: top + f.y });
       art.lights.forEach((l, i) => this.lights.push({ x: z.x * T + l.x, y: top + l.y, color: l.color, i }));
-      if (z.kind === 'home') this.smoke.push({ x: z.x * T + z.w * T - 25, y: top });
+      if (art.smoke) this.smoke.push({ x: z.x * T + art.smoke.x, y: top + art.smoke.y });
     }
 
     // water is solid except bridges
@@ -287,98 +291,213 @@ export class World {
   private paint() {
     const [c, ctx] = A.canvas(MW * T, MH * T);
     this.groundCanvas = c;
-    const r = rng(77);
-    const px = (x: number, y: number, w: number, h: number, col: string) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); };
+    const PW = MW * T, PH = MH * T;
+    const img = ctx.createImageData(PW, PH);
+    const buf = new Uint32Array(img.data.buffer);
+    const col = new Map<string, number>();
+    const pk = (hex: string) => {
+      let v = col.get(hex);
+      if (v === undefined) { const n = parseInt(hex.slice(1), 16); v = ((255 << 24) | ((n & 255) << 16) | (n & 0xff00) | ((n >> 16) & 255)) >>> 0; col.set(hex, v); }
+      return v;
+    };
+    const set = (x: number, y: number, hex: string) => { if (x >= 0 && y >= 0 && x < PW && y < PH) buf[y * PW + x] = pk(hex); };
     const g = (x: number, y: number) => (this.inb(x, y) ? this.ground[this.idx(x, y)] : G.Grass);
-    const landLike = (v: G) => v !== G.Water && v !== G.Bridge;
+    const gp = (px: number, py: number) => g(Math.floor(px / T), Math.floor(py / T));
+    const land = (v: G) => v !== G.Water && v !== G.Bridge;
+    const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    const big = valueNoise(PW, PH, 28, 5), small = valueNoise(PW, PH, 7, 9);
 
-    for (let ty = 0; ty < MH; ty++)
-      for (let tx = 0; tx < MW; tx++) {
-        const X = tx * T, Y = ty * T, v = g(tx, ty);
-        if (v === G.Grass) {
-          px(X, Y, T, T, '#6fbf55');
-          for (let k = 0; k < 10; k++) px(X + Math.floor(r() * 16), Y + Math.floor(r() * 16), 1, 1, r() < 0.5 ? '#62b04b' : '#7ccb5f');
-          if (r() < 0.45) { const ax = X + 2 + Math.floor(r() * 11), ay = Y + 3 + Math.floor(r() * 10); px(ax, ay, 1, 2, '#4f9a3f'); px(ax + 2, ay, 1, 2, '#4f9a3f'); px(ax + 1, ay + 1, 1, 2, '#4f9a3f'); }
-        } else if (v === G.Path) {
-          px(X, Y, T, T, '#dcbc80');
-          for (let k = 0; k < 8; k++) px(X + Math.floor(r() * 16), Y + Math.floor(r() * 16), 1, 1, r() < 0.6 ? '#c9a86e' : '#ead09a');
-          if (r() < 0.2) px(X + 3 + Math.floor(r() * 9), Y + 3 + Math.floor(r() * 9), 2, 1, '#a99a86');
-        } else if (v === G.Plaza) {
-          px(X, Y, T, T, '#cfc8ba');
-          px(X, Y, T, 1, '#aca493'); px(X, Y + 8, T, 1, '#aca493');
-          px(X + ((ty % 2) ? 0 : 8), Y, 1, 8, '#aca493'); px(X + ((ty % 2) ? 8 : 0), Y + 8, 1, 8, '#aca493');
-          px(X + 1, Y + 1, 6, 1, '#e2dccf'); px(X + 9, Y + 9, 6, 1, '#e2dccf');
-        } else if (v === G.Water) {
-          px(X, Y, T, T, '#4aa3df');
-          for (let k = 0; k < 4; k++) px(X + Math.floor(r() * 14), Y + Math.floor(r() * 16), 3, 1, '#3b8fd6');
-        } else if (v === G.Bridge) {
-          px(X, Y, T, T, '#a8743f');
-          for (let x = 0; x < T; x += 4) px(X + x, Y, 1, T, '#7a4f28');
-          if (g(tx, ty - 1) === G.Water) { px(X, Y, T, 3, '#5e3a1c'); px(X, Y, T, 1, '#8a5a2e'); }
-          if (g(tx, ty + 1) === G.Water) { px(X, Y + T - 3, T, 3, '#5e3a1c'); px(X, Y + T - 3, T, 1, '#8a5a2e'); }
-        } else if (v === G.Ash) {
-          px(X, Y, T, T, '#575061');
-          for (let k = 0; k < 10; k++) px(X + Math.floor(r() * 16), Y + Math.floor(r() * 16), 1, 1, r() < 0.5 ? '#4b4555' : '#665e71');
-          if (r() < 0.25) px(X + Math.floor(r() * 15), Y + Math.floor(r() * 15), 1, 1, '#ff8a3d');
-          if (r() < 0.15) { let cx = X + 2 + Math.floor(r() * 10), cy = Y + 2 + Math.floor(r() * 10); for (let k = 0; k < 5; k++) { px(cx, cy, 1, 1, '#2e2934'); cx += r() < 0.5 ? 1 : 0; cy += 1; } }
-        }
+    const CR = 8;
+    const cutCorner = (x: number, y: number) => {
+      const tx = Math.floor(x / T), ty = Math.floor(y / T), lx = x - tx * T + 0.5, ly = y - ty * T + 0.5;
+      for (const [sx, sy] of CORNERS) {
+        const a = g(tx + sx, ty), b = g(tx, ty + sy);
+        if (!land(a) || !land(b)) continue;
+        const cx = sx < 0 ? CR : T - CR, cy = sy < 0 ? CR : T - CR;
+        if ((sx < 0 ? lx < cx : lx > cx) && (sy < 0 ? ly < cy : ly > cy) && Math.hypot(lx - cx, ly - cy) > CR) return a;
       }
-
-    // edges
+      return -1;
+    };
+    const wm = (this.waterMask = new Uint8Array(PW * PH)); // final water mask, after rounding
+    // Main ground pass. Runs over ~1M pixels on phones, so it works tile by
+    // tile with pre-packed colours and only measures edge distances on tiles
+    // that actually border something different.
+    const P = (a: string[]) => a.map(pk);
+    const GRASS = P(['#5aa846', '#64b14c', '#6fbb53', '#7ac55a']);
+    const DIRT = P(['#c9a56c', '#d5b278', '#dfbe85', '#e8cb94']);
+    const ASH = P(['#4b4555', '#534c5e', '#5b5367', '#645c70']);
+    const [RIM, WORN] = P(['#4f9a3f', '#bf9a60']);
+    const PLAZA = P(['#c2bbad', '#cec7b9', '#d9d3c6', '#9e9688', '#e4dfd4', '#b4ac9d']);
+    const WATER = P(['#62bce8', '#4aa3df', '#3b8fd6']);
+    const BRIDGE = P(['#c08a52', '#6e4628', '#9a6a3a', '#a8743f', '#4e3220']);
+    const [EMBER, EMBER2] = P(['#ff8a3d', '#ffd27a']);
+    const HW = PW >> 1, nf = new Float32Array(HW * (PH >> 1)), wf = new Float32Array(HW * (PH >> 1));
+    for (let y = 0; y < PH; y += 2) for (let x = 0; x < PW; x += 2) { const s2 = small(x, y), k = (y >> 1) * HW + (x >> 1); nf[k] = big(x, y) * 0.75 + s2 * 0.25; wf[k] = s2; }
+    const nAt = (x: number, y: number) => (y >> 1) * HW + (x >> 1);
+    const nbrs = (tx: number, ty: number, pred: (v: G) => boolean) => {
+      const out: number[] = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && pred(g(tx + dx, ty + dy))) out.push(dx, dy);
+      return out;
+    };
+    // distance from a pixel (local lx, ly) to the nearest neighbour tile in `nb`
+    const dist = (nb: number[], lx: number, ly: number) => {
+      let d = 99;
+      for (let k = 0; k < nb.length; k += 2) {
+        const dx = nb[k], dy = nb[k + 1];
+        const ex = dx < 0 ? lx + 0.5 : dx > 0 ? T - lx - 0.5 : 0, ey = dy < 0 ? ly + 0.5 : dy > 0 ? T - ly - 0.5 : 0;
+        const e = dx && dy ? Math.sqrt(ex * ex + ey * ey) : ex + ey;
+        if (e < d) d = e;
+      }
+      return d;
+    };
+    const isGrass = (k: G) => k === G.Grass;
     for (let ty = 0; ty < MH; ty++)
       for (let tx = 0; tx < MW; tx++) {
-        const X = tx * T, Y = ty * T, v = g(tx, ty);
-        const nb: [number, number, number, number][] = [[0, -1, 0, 0], [0, 1, 0, T - 1], [-1, 0, 0, 0], [1, 0, T - 1, 0]];
-        for (const [dx, dy, ox, oy] of nb) {
-          const n = g(tx + dx, ty + dy);
-          const horiz = dy !== 0;
-          const line = (col: string, inset: number, chance = 1) => {
-            for (let k = 0; k < T; k++) {
-              if (r() > chance) continue;
-              const x = horiz ? X + k : X + ox + (dx > 0 ? -inset : inset);
-              const y = horiz ? Y + oy + (dy > 0 ? -inset : inset) : Y + k;
-              px(x, y, 1, 1, col);
+        const v0 = g(tx, ty);
+        const pathNb = v0 === G.Path ? nbrs(tx, ty, isGrass) : [];
+        const waterNb = v0 === G.Water ? nbrs(tx, ty, land) : [];
+        const pathEdge = pathNb.length > 0, waterEdge = waterNb.length > 0;
+        for (let ly = 0; ly < T; ly++)
+          for (let lx = 0; lx < T; lx++) {
+            const x = tx * T + lx, y = ty * T + ly, i = y * PW + x;
+            let v = v0;
+            if (v === G.Water) { if (waterEdge) { const k = cutCorner(x, y); if (k >= 0) v = k === G.Plaza ? G.Grass : k; } if (v === G.Water) wm[i] = 1; }
+            const ni = nAt(x, y), dv = (BAYER[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+            const tf = Math.floor(nf[ni] * 3.2 + dv * 1.1 - 0.35), ti = tf < 0 ? 0 : tf > 3 ? 3 : tf;
+            let c: number;
+            if (v === G.Grass) c = GRASS[ti];
+            else if (v === G.Path) {
+              c = DIRT[ti];
+              if (pathEdge) {
+                const d = dist(pathNb, lx, ly), wob = 1.2 + wf[nAt((x * 3) % PW, (y * 3) % PH)] * 2.2;
+                if (d < wob) c = d < wob - 1 ? GRASS[ti] : RIM;
+                else if (d < wob + 1.4) c = WORN;
+              }
+            } else if (v === G.Plaza) {
+              const row = y >> 3, off = row % 2 ? 4 : 0, px = (x + off) % 10, py = y & 7, h = hash(Math.floor((x + off) / 10), row);
+              c = PLAZA[h < 0.2 ? 0 : h > 0.8 ? 2 : 1];
+              if (px === 9 || py === 7) c = PLAZA[3];
+              else if (px === 0 || py === 0) c = PLAZA[4];
+              else if (px === 8 || py === 6 || hash(x, y) < 0.03) c = PLAZA[5];
+            } else if (v === G.Water) {
+              const d = waterEdge ? dist(waterNb, lx, ly) : 99;
+              const deep = Math.min(1, d / 14) + (wf[ni] - 0.5) * 0.15;
+              c = WATER[deep < 0.18 ? 0 : deep + dv * 0.12 < 0.5 ? 1 : 2];
+            } else if (v === G.Bridge) {
+              const px = x & 3;
+              c = px === 0 ? BRIDGE[0] : px === 3 ? BRIDGE[1] : hash(x >> 2, 3) < 0.3 ? BRIDGE[2] : BRIDGE[3];
+              if ((ly === 3 || ly === 12) && px === 1) c = BRIDGE[4];
+            } else {
+              c = ASH[ti];
+              const h = hash(x, y);
+              if (h < 0.004) c = EMBER; else if (h < 0.006) c = EMBER2;
             }
-          };
-          if (v === G.Path && n === G.Grass) { line('#6fbf55', 0, 0.55); line('#b8975e', 1, 0.5); }
-          if (v === G.Ash && n === G.Grass) { line('#6fbf55', 0, 0.5); line('#5d7a4f', 1, 0.4); }
-          if (v === G.Water && landLike(n)) { line('#2f6fa8', 0); line('#bfe9ff', 1, 0.5); }
-          if (v === G.Grass && n === G.Water) line('#4f9a3f', 0);
-          if (v === G.Plaza && (n === G.Grass || n === G.Path)) line('#8f887a', 0);
+            buf[i] = c;
+          }
+      }
+
+    // water edges, per pixel so they follow the rounded corners: an earthy bank
+    // face where land is above, a shadow under bridges, and foam everywhere else
+    const isW = (x: number, y: number) => x < 0 || y < 0 || x >= PW || y >= PH || wm[y * PW + x] === 1;
+    for (let y = 0; y < PH; y++)
+      for (let x = 0; x < PW; x++) {
+        if (!wm[y * PW + x]) {
+          if (isW(x, y + 1) && y + 1 < PH && gp(x, y) === G.Grass) set(x, y, '#3f8a3a');
+          continue;
+        }
+        const up = !isW(x, y - 1) ? 1 : !isW(x, y - 2) ? 2 : !isW(x, y - 3) ? 3 : !isW(x, y - 4) ? 4 : 0;
+        const underBridge = up && gp(x, y - up) === G.Bridge;
+        const k = hash(x, 5) < 0.5 ? 0 : 1;
+        if (up && underBridge) { if (up <= 2) set(x, y, up === 1 ? '#2a5f95' : '#2f6fa8'); continue; }
+        if (up === 1) { set(x, y, '#7a5a3a'); continue; }
+        if (up === 2) { set(x, y, '#5e4228'); continue; }
+        if (up === 3) { set(x, y, k ? '#5e4228' : '#2f6fa8'); continue; }
+        if (up === 4) { set(x, y, k ? '#2f6fa8' : '#3b8fd6'); continue; }
+        const near1 = !isW(x - 1, y) || !isW(x + 1, y) || !isW(x, y + 1);
+        const near2 = !isW(x - 2, y) || !isW(x + 2, y) || !isW(x, y + 2);
+        if (near1 && hash(x, y, 3) > 0.2) set(x, y, '#d8f3ff');
+        else if ((near1 || near2) && hash(x, y, 4) > 0.3) set(x, y, '#9fd9f5');
+      }
+    for (let ty = 0; ty < MH; ty++)
+      for (let tx = 0; tx < MW; tx++) {
+        if (g(tx, ty) !== G.Bridge) continue;
+        const X = tx * T, Y = ty * T;
+        // railings along both water edges, with posts
+        for (const [dy, ry] of [[-1, 0], [1, T - 3]] as [number, number][]) {
+          if (g(tx, ty + dy) !== G.Water) continue;
+          for (let x = 0; x < T; x++) { set(X + x, Y + ry, '#d9a466'); set(X + x, Y + ry + 1, '#8a5a2e'); set(X + x, Y + ry + 2, '#4e3220'); }
+          for (let x = 1; x < T; x += 5) { set(X + x, Y + ry, '#f0c890'); set(X + x + 1, Y + ry, '#6e4628'); }
         }
       }
 
-    // lily pads in the pond
-    for (let k = 0; k < 7; k++) {
-      const x = (35 + r() * 7) * T, y = (32.5 + r() * 5) * T;
-      if (g(Math.floor(x / T), Math.floor(y / T)) !== G.Water) continue;
-      px(x - 3, y - 2, 6, 4, '#2e7a3a'); px(x - 2, y - 2, 4, 1, '#4a9a4a'); px(x, y - 2, 1, 2, '#4aa3df');
-      if (r() < 0.4) px(x + 1, y - 1, 2, 2, '#ffb3c6');
-    }
-
-    // flowers and mushrooms
+    // grass tufts, flowers and mushrooms on free grass
+    const r = rng(77);
     for (let ty = 0; ty < MH; ty++)
       for (let tx = 0; tx < MW; tx++) {
         const i = this.idx(tx, ty);
-        if (this.solid[i] || this.reserved[i]) continue;
         const X = tx * T, Y = ty * T, v = g(tx, ty);
-        if (v === G.Grass && r() < 0.09) {
+        if (v !== G.Grass) continue;
+        for (let k = 0; k < 2; k++) {
+          if (r() > 0.55) continue;
+          const ax = X + 2 + Math.floor(r() * 11), ay = Y + 4 + Math.floor(r() * 10);
+          set(ax, ay, '#4f9a3f'); set(ax + 2, ay, '#4f9a3f'); set(ax + 1, ay, '#4f9a3f');
+          set(ax, ay - 1, '#5aa846'); set(ax + 2, ay - 2, '#8ccf63'); set(ax + 1, ay - 1, '#7ac55a'); set(ax - 1, ay - 2, '#8ccf63');
+        }
+        if (this.solid[i] || this.reserved[i]) continue;
+        if (r() < 0.09) {
           const cols = [['#ffffff', '#ffd34d'], ['#ff8fb1', '#fff3a0'], ['#ffd34d', '#c2701e'], ['#a98bff', '#ffffff']][Math.floor(r() * 4)];
-          for (let k = 0; k < 3; k++) { const fx = X + 2 + Math.floor(r() * 11), fy = Y + 2 + Math.floor(r() * 11); px(fx - 1, fy, 3, 1, cols[0]); px(fx, fy - 1, 1, 3, cols[0]); px(fx, fy, 1, 1, cols[1]); }
-        } else if (v === G.Grass && r() < 0.012) {
-          const fx = X + 5, fy = Y + 6; px(fx, fy, 5, 2, '#d63a4a'); px(fx + 1, fy - 1, 3, 1, '#d63a4a'); px(fx + 1, fy, 1, 1, '#ffffff'); px(fx + 2, fy + 2, 1, 2, '#f3e7cf');
+          for (let k = 0; k < 3; k++) {
+            const fx = X + 2 + Math.floor(r() * 11), fy = Y + 2 + Math.floor(r() * 11);
+            set(fx, fy + 1, '#3f8a3a');
+            set(fx - 1, fy, cols[0]); set(fx + 1, fy, cols[0]); set(fx, fy - 1, cols[0]); set(fx, fy, cols[1]);
+          }
+        } else if (r() < 0.012) {
+          const fx = X + 5, fy = Y + 6;
+          for (let k = 0; k < 5; k++) set(fx + k, fy, '#d63a4a');
+          for (let k = 1; k < 4; k++) set(fx + k, fy - 1, '#e8576a');
+          set(fx + 1, fy, '#ffffff'); set(fx + 3, fy - 1, '#ffffff'); set(fx + 2, fy + 1, '#f3e7cf'); set(fx + 2, fy + 2, '#d9c9a8');
         }
       }
+    // pebbles on paths
+    for (let ty = 0; ty < MH; ty++)
+      for (let tx = 0; tx < MW; tx++) {
+        if (g(tx, ty) !== G.Path) continue;
+        for (let k = 0; k < 2; k++) {
+          if (r() > 0.4) continue;
+          const px = tx * T + 3 + Math.floor(r() * 10), py = ty * T + 3 + Math.floor(r() * 10);
+          set(px, py, '#efe2c4'); set(px + 1, py, '#c8b89a'); set(px, py + 1, '#a8916c'); set(px + 1, py + 1, '#8f7756');
+        }
+      }
+    ctx.putImageData(img, 0, 0);
 
-    // soft shadows under everything that stands up
-    ctx.fillStyle = 'rgba(20,18,40,0.22)';
-    for (const z of ZONES) {
-      ctx.fillRect(z.x * T + 4, (z.y + z.h) * T, z.w * T - 2, 4);
-      ctx.fillRect((z.x + z.w) * T, z.y * T + 10, 4, z.h * T - 6);
+    // lily pads
+    for (let k = 0; k < 7; k++) {
+      const x = Math.floor((35 + r() * 7) * T), y = Math.floor((32.5 + r() * 5) * T);
+      if (g(Math.floor(x / T), Math.floor(y / T)) !== G.Water) continue;
+      ctx.fillStyle = '#245f30'; ctx.fillRect(x - 3, y - 1, 7, 4);
+      ctx.fillStyle = '#3d8241'; ctx.fillRect(x - 3, y - 2, 6, 4);
+      ctx.fillStyle = '#58a34b'; ctx.fillRect(x - 2, y - 2, 3, 1);
+      ctx.fillStyle = '#4aa3df'; ctx.fillRect(x, y - 2, 1, 2);
+      if (r() < 0.45) { ctx.fillStyle = '#ffb3c6'; ctx.fillRect(x + 1, y - 2, 2, 2); ctx.fillStyle = '#fff0f5'; ctx.fillRect(x + 1, y - 2, 1, 1); }
     }
+
+    // shadows: each building casts its own silhouette towards the bottom right
+    for (const z of ZONES) {
+      const art = z.art!;
+      const top = (z.y + z.h) * T - art.img.height;
+      const footTop = z.y * T - top; // first image row inside the footprint
+      const [sc, sx] = A.canvas(art.img.width, art.img.height);
+      sx.drawImage(art.img, 0, 0);
+      sx.globalCompositeOperation = 'source-in';
+      sx.fillStyle = 'rgba(24,20,48,0.3)';
+      sx.fillRect(0, 0, sc.width, sc.height);
+      const rows = art.img.height - footTop;
+      ctx.drawImage(sc, 0, footTop, sc.width, rows, z.x * T + 5, z.y * T + 4, sc.width, rows);
+    }
+    ctx.fillStyle = 'rgba(24,20,48,0.24)';
     for (const o of this.objects) {
       if (o.zone) continue;
-      const cx = o.x + o.img.width / 2, cy = o.base + 1;
+      const cx = o.x + o.img.width / 2 + 1, cy = o.base + 1;
       const rx = Math.min(8, o.img.width / 2 - 1);
       ctx.beginPath(); ctx.ellipse(cx, cy, rx, 3, 0, 0, Math.PI * 2); ctx.fill();
     }
