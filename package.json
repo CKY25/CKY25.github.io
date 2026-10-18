@@ -1,0 +1,22 @@
+{
+  "name": "cky-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cheong Khe Yang's interactive game-world portfolio",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

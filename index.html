@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Cheong Khe Yang · Game Developer Portfolio</title>
+    <meta name="description" content="Cheong Khe Yang, a Junior Unity Game Developer. An explorable pixel-art world of my games and projects: Emberfall, Party Pals, SuperNormal, game jam games and more." />
+    <meta name="theme-color" content="#16142a" />
+    <meta property="og:title" content="Cheong Khe Yang · Game Developer Portfolio" />
+    <meta property="og:description" content="Explore a pixel-art world of my games and projects, or jump straight to Quick View." />
+    <meta property="og:image" content="media/emberfall/poster.jpg" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <canvas id="world" aria-label="Explorable pixel-art world. Use Quick View for a text version."></canvas>
+
+    <div id="title" class="title">
+      <div class="title-inner">
+        <p class="kicker">✦ Interactive Portfolio ✦</p>
+        <h1 class="title-name">Cheong<br />Khe Yang</h1>
+        <p class="title-role">Junior Unity Game Developer</p>
+        <p class="title-tag">I build games, and the tools that build them.</p>
+        <nav class="title-menu" aria-label="Main menu">
+          <button class="btn btn-big btn-gold" data-act="start"><span class="caret">▶</span> Start Adventure</button>
+          <button class="btn btn-big" data-act="quick"><span class="caret">⚡</span> Quick View</button>
+          <a class="btn btn-big btn-ghost" href="Cheong-Khe-Yang-Resume.pdf" target="_blank" rel="noopener"><span class="caret">📄</span> Resume (PDF)</a>
+        </nav>
+        <ul class="title-chips">
+          <li>🎓 TARUMT · Distinction</li>
+          <li>💼 Youniverse Games</li>
+          <li>🛠️ 26 projects &amp; games</li>
+        </ul>
+        <p class="title-hint"><span class="blink">Press Start</span><span class="hint-desktop"> · Enter / Space</span></p>
+      </div>
+    </div>
+
+    <div id="hud" class="hud" hidden>
+      <div class="hud-left">
+        <div class="badge">
+          <canvas id="avatar" width="16" height="16"></canvas>
+          <div>
+            <strong>Khe Yang</strong>
+            <span>Unity Game Dev</span>
+          </div>
+        </div>
+        <div class="meter" title="Buildings explored">
+          <div class="meter-label"><span>Explored</span><b id="explored">0/20</b></div>
+          <div class="meter-bar"><i id="explored-bar"></i></div>
+        </div>
+        <div class="coins" title="Coins found">🪙 <b id="coins">0/10</b></div>
+      </div>
+      <div class="hud-right">
+        <button class="hbtn hbtn-label" data-act="quick" title="Quick View: everything on one page"><span>⚡</span><em>Quick View</em></button>
+        <button class="hbtn" data-act="map" title="World map and fast travel" aria-label="World map"><span>🗺️</span></button>
+        <button class="hbtn" data-act="trophies" title="Achievements" aria-label="Achievements"><span>🏆</span></button>
+        <button class="hbtn" data-act="music" title="Music" aria-label="Toggle music" aria-pressed="false"><span>♪</span></button>
+        <button class="hbtn" data-act="sfx" title="Sound effects" aria-label="Toggle sound effects" aria-pressed="true"><span>🔊</span></button>
+      </div>
+      <canvas id="minimap" class="minimap" width="176" height="160" title="Click to travel"></canvas>
+      <p id="hint" class="hint"></p>
+    </div>
+
+    <div id="dialog" class="dialog" hidden role="dialog" aria-live="polite">
+      <div class="dialog-name" id="dialog-name"></div>
+      <p class="dialog-text" id="dialog-text"></p>
+      <div class="dialog-actions" id="dialog-actions"></div>
+      <span class="dialog-next" aria-hidden="true">▼</span>
+    </div>
+
+    <div id="panel-root"></div>
+    <div id="quick" class="quick" hidden></div>
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript">
+        <h1>Cheong Khe Yang · Junior Unity Game Developer</h1>
+        <p>This portfolio is an explorable game world and needs JavaScript. Meanwhile: <a href="Cheong-Khe-Yang-Resume.pdf">Resume (PDF)</a> · <a href="https://github.com/CKY25">GitHub</a> · <a href="https://jemydev.itch.io/">itch.io</a> · <a href="mailto:ckyy0625@gmail.com">ckyy0625@gmail.com</a></p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
