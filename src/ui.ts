@@ -343,7 +343,7 @@ function buildQuick(q: HTMLElement, avatar: HTMLCanvasElement) {
 
       <section class="q-sec" style="--accent:#b98be0"><h2>🎓 University projects</h2><div class="cards">${school.map((p) => card(p)).join('')}</div></section>
 
-      <section class="q-sec" style="--accent:#ff4ad8"><h2>🕹️ Game jams & itch.io</h2><p class="sub">7 games published on itch.io. Most were built in a few days for game jams, and most play in the browser.</p><div class="cards">${JAMS.map((p) => card(p)).join('')}</div></section>
+      <section class="q-sec" style="--accent:#ff4ad8"><h2>🕹️ Game jams & itch.io</h2><p class="sub">8 games published on itch.io. Most were built in a few days for game jams, and most play in the browser.</p><div class="cards">${JAMS.map((p) => card(p)).join('')}</div></section>
 
       <section class="q-sec" style="--accent:#7fb8e3"><h2>💼 Experience</h2>${expHTML()}</section>
 

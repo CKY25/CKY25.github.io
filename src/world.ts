@@ -61,7 +61,7 @@ export const SIGNS: Sign[] = [
     'Side Quest Street: the projects I build in my free time. Multiplayer games and apps I use every day.',
     'Each shop is one project. Walk in to take a look!',
   ] },
-  { x: 46, y: 39, title: 'Arcade ahead', lines: ['The Game Jam Arcade: 7 games I made, mostly in 48 to 96 hours. Most of them play right in your browser!'] },
+  { x: 46, y: 39, title: 'Arcade ahead', lines: ['The Game Jam Arcade: 8 games I made, mostly in 48 to 96 hours. Most of them play right in your browser!'] },
 ];
 
 export const SPAWN = { x: 32, y: 29 };

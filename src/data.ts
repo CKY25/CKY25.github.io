@@ -20,7 +20,7 @@ export const PROFILE = {
   ],
   facts: [
     { icon: '🎓', text: 'Distinction, CGPA 3.87 (Degree) and 3.98 (Diploma)' },
-    { icon: '🎮', text: '7 games published on itch.io, most from game jams' },
+    { icon: '🎮', text: '8 games published on itch.io, most from game jams' },
     { icon: '🛡️', text: 'Took part in multiple CTF cybersecurity competitions' },
     { icon: '🗣️', text: 'Speaks English, Chinese, Malay, Cantonese and Japanese' },
     { icon: '🐱', text: 'A proud cat person (say hi to the cat following you)' },
@@ -478,6 +478,33 @@ export const JAMS: Project[] = [
       { label: 'Get it on itch.io', url: 'https://jemydev.itch.io/project-swarm', kind: 'play' },
       { label: 'Free demo', url: 'https://jemydev.itch.io/project-swarm-demo', kind: 'play' },
     ],
+  }),
+  jam({
+    id: 'exact',
+    title: 'EXACT',
+    subtitle: 'Number-matching arcade survival',
+    year: '2026',
+    jam: 'Official Unity Game Jam 2026',
+    theme: 'Lucky Number',
+    engine: 'Unity',
+    platform: 'Browser · Windows',
+    tech: ['Unity', 'C#', 'WebGL', 'Online leaderboard'],
+    cover: J + 'exact-cover.jpg',
+    summary:
+      'You are a number. Grab plus, minus and multiply orbs to land exactly on your lucky number, then set off a Lucky Burst, your only weapon against the swarming Jinxes. Overshoot and you bust, losing a heart.',
+    highlights: [
+      'Made in 7 days, with quick 3 to 8 minute runs',
+      'Combos up to ×5 and an upgrade draft every third burst, from 17 upgrades',
+      '22 goals that unlock new upgrade cards and clovers for new starting digits and inks',
+      'A Daily Lucky Seed, a collection book, and online all-time and daily leaderboards',
+    ],
+    media: [
+      { type: 'image', src: J + 'exact-1.jpg', alt: 'An EXACT! Lucky Burst wiping out a pack of Jinxes' },
+      { type: 'image', src: J + 'exact-2.jpg', alt: 'Chasing a lucky number of 30 through orbs and Jinxes' },
+      { type: 'image', src: J + 'exact-3.jpg', alt: 'The upgrade draft: pick one of four cards' },
+      { type: 'image', src: J + 'exact-4.jpg', alt: 'The results screen with score, upgrades and goals' },
+    ],
+    links: [{ label: 'Play in browser', url: 'https://jemydev.itch.io/exact', kind: 'play' }],
   }),
   jam({
     id: 'stellar',
