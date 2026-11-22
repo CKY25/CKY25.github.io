@@ -20,7 +20,7 @@ export const PROFILE = {
   ],
   facts: [
     { icon: '🎓', text: 'Distinction, CGPA 3.87 (Degree) and 3.98 (Diploma)' },
-    { icon: '🎮', text: '8 games published on itch.io, most from game jams' },
+    { icon: '🎮', text: '10 games published on itch.io, including Emberfall' },
     { icon: '🛡️', text: 'Took part in multiple CTF cybersecurity competitions' },
     { icon: '🗣️', text: 'Speaks English, Chinese, Malay, Cantonese and Japanese' },
     { icon: '🐱', text: 'A proud cat person (say hi to the cat following you)' },
@@ -65,16 +65,16 @@ export const PROJECTS: Project[] = [
     year: '2026',
     role: 'Solo developer',
     engine: 'Unity 6.3 · URP 2D',
-    platform: 'Windows (keyboard + mouse, gamepad)',
-    status: 'v1.0.0 released build',
-    tech: ['Unity 6', 'C#', 'URP 2D', 'uGUI + TextMeshPro', 'Python tooling'],
+    platform: 'Browser · Windows (keyboard + mouse, gamepad)',
+    status: 'v1.0.0, out now on itch.io',
+    tech: ['Unity 6', 'C#', 'URP 2D', 'WebGL', 'uGUI + TextMeshPro', 'Python tooling'],
     cover: M + 'emberfall/poster.jpg',
     summary:
       "The world's last fire is going out. You are a Warden, sent to take back three Runes from the ancient beings who stole them to become undying. A tight-combat action game in the spirit of Death's Door, with hand-built regions, boss fights and a roguelite mode.",
     highlights: [
       'Responsive melee: a 3-hit combo, a charged slash that breaks guard, an invulnerable roll and spells that refill only through melee hits, so you have to play aggressively',
       'A hub, 3 regions (Ashen Hollow, the Drowned Abbey and the Thornwood) and a finale in the Pale Crown. Each region has its own tileset and ambience, and its boss has phases, a name card and its own music, ending with the 3-phase Undying King',
-      'The Ember Depths: a roguelite mode with 4 floors laid out anew every run, 32 stacking charms, mimics, shrines, a shop and an echo of each boss',
+      'The Ember Depths: a roguelite mode with 4 floors laid out anew every run, 9 weapons, 32 stacking charms, mimics, shrines, a shop and an echo of each boss',
       'Rooms are generated from text maps by a custom editor tool, and Python scripts check every room and that every door links back correctly',
       'Every action can be rebound for keyboard, mouse and gamepad, with accessibility options (screen shake, hit-stop, flashing, text size) and 3 save slots',
       'The trailer is recorded from the game itself and cut by script',
@@ -89,7 +89,10 @@ export const PROJECTS: Project[] = [
       { type: 'image', src: M + 'emberfall/arena.jpg', alt: 'A boss-arena fight' },
       { type: 'image', src: M + 'emberfall/gauntlet.jpg', alt: 'Picking up the Ember Gauntlet' },
     ],
-    links: [privateDemo('Emberfall')],
+    links: [
+      { label: 'Play on itch.io', url: 'https://jemydev.itch.io/emberfall', kind: 'play' },
+      { label: 'Private repo · ask for a code walkthrough', url: `mailto:${PROFILE.email}?subject=${encodeURIComponent('Code walkthrough: Emberfall')}`, kind: 'private' },
+    ],
   },
   {
     id: 'partypals',
@@ -601,6 +604,31 @@ export const JAMS: Project[] = [
     highlights: ['Echo replay system: each loop records and replays your moves', 'A rotatable 3D camera'],
     media: [{ type: 'image', src: J + 'dungeon-loop-cover.png', alt: 'Dungeon Loop cover' }],
     links: [{ label: 'Play in browser', url: 'https://jemydev.itch.io/dungeon-loop', kind: 'play' }],
+  }),
+  jam({
+    id: 'powersweep',
+    title: 'Power Sweep',
+    subtitle: 'Robot-vacuum race against a draining battery',
+    year: '2025',
+    jam: 'Kenney Jam 2025',
+    theme: 'Power',
+    engine: 'Unity',
+    platform: 'Browser · Windows',
+    tech: ['Unity', 'C#', '3D', 'Kenney + KayKit assets'],
+    cover: J + 'power-sweep-cover.jpg',
+    summary: 'You are a battery-powered robot vacuum that has to clean the whole house before its power runs out. Weave around furniture, suck up every pile of dirt and race the clock from room to room.',
+    highlights: [
+      'My first game jam: made solo in 48 hours, using only Kenney and KayKit assets as the rules required',
+      'The theme drives the core loop: every move drains the battery, so you plan routes between power cells and charging stations',
+      'A Super Boost pickup doubles your speed for a short time',
+    ],
+    media: [
+      { type: 'image', src: J + 'power-sweep-1.jpg', alt: 'Cleaning up the kitchen' },
+      { type: 'image', src: J + 'power-sweep-2.jpg', alt: 'Racing the clock in the bedroom' },
+      { type: 'image', src: J + 'power-sweep-3.jpg', alt: 'Steering around the furniture in a bathroom' },
+      { type: 'image', src: J + 'power-sweep-4.jpg', alt: 'The controls and pickups guide' },
+    ],
+    links: [{ label: 'Play in browser', url: 'https://jemydev.itch.io/power-sweep', kind: 'play' }],
   }),
 ];
 
